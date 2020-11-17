@@ -15,7 +15,8 @@ int      MultiphaseAMR::NUM_STATE       = 8;  // Four variables in the state
 int      MultiphaseAMR::NUM_GROW        = 4;  // number of ghost cells
 int      MultiphaseAMR::num_state_type  = 2;  // number of ghost cells
 
-Real   gam                          = 1.4;
+Real   gamL                          = 1.4;
+Real   gamR                          = 1.4;
 std::string probType                = "";
 int    Ncons                           = 4;
 int    Nprim                           = 4;
@@ -139,8 +140,6 @@ MultiphaseAMR::variableSetUp ()
     }
 
     BCRec bc(lo_bc, hi_bc);
-    if(probType == "EULER")
-    {
 
         desc_lst.setComponent(Cons_Type, DEN, "den", bc,
                   StateDescriptor::BndryFunc(phifill));
@@ -158,7 +157,7 @@ MultiphaseAMR::variableSetUp ()
                   StateDescriptor::BndryFunc(phifill));
         desc_lst.setComponent(Prim_Type, Press, "p", bc,
                   StateDescriptor::BndryFunc(phifill));
-    }
+
     // else if(probType == "ALLAIRE")
     // {
     //     desc_lst.setComponent(Prim, 0, "rho1", bc,

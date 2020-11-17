@@ -1,6 +1,6 @@
 
 #include <AMReX_LevelBld.H>
-#include <AmrLevelAdv.H>
+#include <Euler.H>
 
 using namespace amrex;
 
@@ -30,19 +30,19 @@ getLevelBld ()
 void
 LevelBldAdv::variableSetUp ()
 {
-    MultiphaseAMR::variableSetUp();
+    Euler::variableSetUp();
 }
 
 void
 LevelBldAdv::variableCleanUp ()
 {
-    MultiphaseAMR::variableCleanUp();
+    Euler::variableCleanUp();
 }
 
 AmrLevel*
 LevelBldAdv::operator() ()
 {
-    return new MultiphaseAMR;
+    return new Euler;
 }
 
 AmrLevel*
@@ -53,5 +53,5 @@ LevelBldAdv::operator() (Amr&            papa,
                          const DistributionMapping& dm,
                          Real            time)
 {
-    return new MultiphaseAMR(papa, lev, level_geom, ba, dm, time);
+    return new Euler(papa, lev, level_geom, ba, dm, time);
 }
