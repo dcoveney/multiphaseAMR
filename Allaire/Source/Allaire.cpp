@@ -1,5 +1,5 @@
 
-#include <AmrLevelAdv.H>
+#include <Allaire.H>
 #include <Adv_F.H>
 #include <AMReX_VisMF.H>
 #include <AMReX_TagBox.H>
@@ -7,15 +7,15 @@
 
 using namespace amrex;
 
-int      MultiphaseAMR::verbose         = 0;
-Real     MultiphaseAMR::cfl             = 0.9;
-int      MultiphaseAMR::do_reflux       = 0;
+int      Allaire::verbose         = 0;
+Real     Allaire::cfl             = 0.9;
+int      Allaire::do_reflux       = 0;
 
-int      MultiphaseAMR::NUM_STATE       = 8;  // Four variables in the state
-int      MultiphaseAMR::NUM_GROW        = 4;  // number of ghost cells
-int      MultiphaseAMR::num_state_type  = 2;  // number of ghost cells
+int      Allaire::NUM_STATE       = 8;  // Four variables in the state
+int      Allaire::NUM_GROW        = 4;  // number of ghost cells
+int      Allaire::num_state_type  = 2;  // number of ghost cells
 
-Real   gamL                          = 1.4;
+Real   gam                          = 1.4;
 Real   gamR                          = 1.4;
 std::string probType                = "";
 int    Ncons                           = 4;
@@ -30,14 +30,14 @@ int    Press                           = 3;
 int    ENEint                         = 4;
 
 #ifdef AMREX_PARTICLES
-std::unique_ptr<AmrTracerParticleContainer> MultiphaseAMR::TracerPC =  nullptr;
-int MultiphaseAMR::do_tracers                       =  0;
+std::unique_ptr<AmrTracerParticleContainer> Allaire::TracerPC =  nullptr;
+int Allaire::do_tracers                       =  0;
 #endif
 
 //
 //Default constructor.  Builds invalid object.
 //
-MultiphaseAMR::MultiphaseAMR ()
+Allaire::Allaire ()
 {
     flux_reg = 0;
 }
@@ -45,7 +45,7 @@ MultiphaseAMR::MultiphaseAMR ()
 //
 //The basic constructor.
 //
-MultiphaseAMR::MultiphaseAMR (Amr&            papa,
+Allaire::Allaire (Amr&            papa,
      	                  int             lev,
                           const Geometry& level_geom,
                           const BoxArray& bl,
@@ -62,7 +62,7 @@ MultiphaseAMR::MultiphaseAMR (Amr&            papa,
 //
 //The destructor.
 //
-MultiphaseAMR::~MultiphaseAMR ()
+Allaire::~Allaire ()
 {
     delete flux_reg;
 }
@@ -71,7 +71,7 @@ MultiphaseAMR::~MultiphaseAMR ()
 //Restart from a checkpoint file.
 //
 void
-MultiphaseAMR::restart (Amr&          papa,
+Allaire::restart (Amr&          papa,
 	              std::istream& is,
                       bool          bReadSpecial)
 {
@@ -83,7 +83,7 @@ MultiphaseAMR::restart (Amr&          papa,
 }
 
 void
-MultiphaseAMR::checkPoint (const std::string& dir,
+Allaire::checkPoint (const std::string& dir,
 		         std::ostream&      os,
                          VisMF::How         how,
                          bool               dump_old)
@@ -100,7 +100,7 @@ MultiphaseAMR::checkPoint (const std::string& dir,
 //Write a plotfile to specified directory.
 //
 void
-MultiphaseAMR::writePlotFile (const std::string& dir,
+Allaire::writePlotFile (const std::string& dir,
 	 	            std::ostream&      os,
                             VisMF::How         how)
 {
@@ -118,7 +118,7 @@ MultiphaseAMR::writePlotFile (const std::string& dir,
 //Define data descriptors.
 //
 void
-MultiphaseAMR::variableSetUp ()
+Allaire::variableSetUp ()
 {
     BL_ASSERT(desc_lst.size() == 0);
 
@@ -190,7 +190,7 @@ MultiphaseAMR::variableSetUp ()
 //Cleanup data descriptors at end of run.
 //
 void
-MultiphaseAMR::variableCleanUp ()
+Allaire::variableCleanUp ()
 {
     desc_lst.clear();
 #ifdef AMREX_PARTICLES
@@ -202,7 +202,7 @@ MultiphaseAMR::variableCleanUp ()
 //Initialize grid data at problem start-up.
 //
 void
-MultiphaseAMR::initData ()
+Allaire::initData ()
 {
     //
     // Loop over grids, call FORTRAN function to init with data.
@@ -248,12 +248,12 @@ MultiphaseAMR::initData ()
 }
 
 //
-//Initialize data on this level from another MultiphaseAMR (during regrid).
+//Initialize data on this level from another Allaire (during regrid).
 //
 void
-MultiphaseAMR::init (AmrLevel &old)
+Allaire::init (AmrLevel &old)
 {
-    MultiphaseAMR* oldlev = (MultiphaseAMR*) &old;
+    Allaire* oldlev = (Allaire*) &old;
     //
     // Create new grid data by fillpatching from old.
     //
@@ -272,7 +272,7 @@ MultiphaseAMR::init (AmrLevel &old)
 //Initialize data on this level after regridding if old level did not previously exist
 //
 void
-MultiphaseAMR::init ()
+Allaire::init ()
 {
     Real dt        = parent->dtLevel(level);
     Real cur_time  = getLevel(level-1).state[Cons_Type].curTime();
@@ -290,7 +290,7 @@ MultiphaseAMR::init ()
 //Advance grids at this level in time.
 //
 Real
-MultiphaseAMR::advance (Real time,
+Allaire::advance (Real time,
                       Real dt,
                       int  iteration,
                       int  ncycle)
@@ -503,7 +503,7 @@ MultiphaseAMR::advance (Real time,
 }
 
 void
-MultiphaseAMR::initialState(FArrayBox& statein, const Box& bx,
+Allaire::initialState(FArrayBox& statein, const Box& bx,
     RealBox gridloc, const Real* dx, int testNumber)
 {
     Array4<Real> const& stateArray = statein.array();
@@ -547,7 +547,7 @@ MultiphaseAMR::initialState(FArrayBox& statein, const Box& bx,
     }
 }
 std::vector<amrex_real>
-MultiphaseAMR::eqnFluxes(std::vector<amrex_real> U, amrex_real gam, int Dim, int Nv)
+Allaire::eqnFluxes(std::vector<amrex_real> U, amrex_real gam, int Dim, int Nv)
 {
     std::vector<Real> F(Ncons);
 
@@ -575,7 +575,7 @@ MultiphaseAMR::eqnFluxes(std::vector<amrex_real> U, amrex_real gam, int Dim, int
 }
 
 void
-MultiphaseAMR::computeFluxForce(const FArrayBox& statein, const Box& bx,
+Allaire::computeFluxForce(const FArrayBox& statein, const Box& bx,
     FArrayBox& flux, amrex_real gam, const amrex_real* dx, const amrex_real dt)
 {
 
@@ -686,7 +686,7 @@ MultiphaseAMR::computeFluxForce(const FArrayBox& statein, const Box& bx,
 }
 
 std::vector<Real>
-MultiphaseAMR::slopeLimiter(std::vector<double> delta_L, std::vector<double> delta_R, double omega,
+Allaire::slopeLimiter(std::vector<double> delta_L, std::vector<double> delta_R, double omega,
     int Nv)
 {
 
@@ -791,7 +791,7 @@ MultiphaseAMR::slopeLimiter(std::vector<double> delta_L, std::vector<double> del
 //
 //
 void
-MultiphaseAMR::MUSCLHancock(const FArrayBox& statein, const Box& bx,
+Allaire::MUSCLHancock(const FArrayBox& statein, const Box& bx,
     FArrayBox& ULbar, FArrayBox& URbar, FArrayBox& flux,
         const amrex_real* dx, double dt, amrex_real gam, int Dim)
 {
@@ -972,7 +972,7 @@ MultiphaseAMR::MUSCLHancock(const FArrayBox& statein, const Box& bx,
 
  }
 
- void MultiphaseAMR::primMUSCLThirdOrder(const FArrayBox& primIn, const Box& bx,
+ void Allaire::primMUSCLThirdOrder(const FArrayBox& primIn, const Box& bx,
      FArrayBox& ULbar, FArrayBox& URbar, FArrayBox& flux,
          const amrex_real* dx, double dt, amrex_real gam, int Dim)
  {
@@ -1094,7 +1094,7 @@ MultiphaseAMR::MUSCLHancock(const FArrayBox& statein, const Box& bx,
  }
 //
 std::vector<amrex_real>
-MultiphaseAMR::fluxHLLCcell(std::vector<double>& U_R, std::vector<double>& U_L,
+Allaire::fluxHLLCcell(std::vector<double>& U_R, std::vector<double>& U_L,
     amrex_real gam, int Dim, int Nv)
 {
     bool speed_estimate = 1;
@@ -1288,7 +1288,7 @@ MultiphaseAMR::fluxHLLCcell(std::vector<double>& U_R, std::vector<double>& U_L,
 
 
 void
-MultiphaseAMR::linearAdv(const FArrayBox& statein, const Box& bx,
+Allaire::linearAdv(const FArrayBox& statein, const Box& bx,
     FArrayBox& flux, double gam, const amrex_real* dx, const amrex_real dt)
 {
     Array4<Real const> const& stateArray = statein.array();
@@ -1334,7 +1334,7 @@ MultiphaseAMR::linearAdv(const FArrayBox& statein, const Box& bx,
 }
 
 void
-MultiphaseAMR::updateState(FArrayBox& stateout, const FArrayBox& statein,
+Allaire::updateState(FArrayBox& stateout, const FArrayBox& statein,
      const Box& bx, const FArrayBox& flux, const amrex_real* dx, const amrex_real dt, int Dim)
 {
     Array4<Real const> const& stateOld = statein.array();
@@ -1403,7 +1403,7 @@ MultiphaseAMR::updateState(FArrayBox& stateout, const FArrayBox& statein,
 }
 
 std::vector<amrex_real>
-MultiphaseAMR::Conserv2Prim(std::vector<amrex_real> U, amrex_real gam)
+Allaire::Conserv2Prim(std::vector<amrex_real> U, amrex_real gam)
 {
     std::vector<Real> W(Nprim);
     W[DEN] = U[DEN];
@@ -1415,7 +1415,7 @@ MultiphaseAMR::Conserv2Prim(std::vector<amrex_real> U, amrex_real gam)
 }
 
 std::vector<amrex_real>
-MultiphaseAMR::Prim2Conserv(std::vector<amrex_real> W, amrex_real gam)
+Allaire::Prim2Conserv(std::vector<amrex_real> W, amrex_real gam)
 {
 	std::vector<double> U(4);
 	U[DEN] = W[DEN];
@@ -1427,7 +1427,7 @@ MultiphaseAMR::Prim2Conserv(std::vector<amrex_real> W, amrex_real gam)
 }
 
 void
-MultiphaseAMR::calcTimeStep(const FArrayBox& statein, const Real* dx, amrex_real gam,
+Allaire::calcTimeStep(const FArrayBox& statein, const Real* dx, amrex_real gam,
     amrex_real& dt)
 {
     Array4<Real const> const& stateArray = statein.array();
@@ -1473,7 +1473,7 @@ MultiphaseAMR::calcTimeStep(const FArrayBox& statein, const Real* dx, amrex_real
 }
 
 void
-MultiphaseAMR::convertConsArraytoPrim(FArrayBox& consIn, FArrayBox& primOut)
+Allaire::convertConsArraytoPrim(FArrayBox& consIn, FArrayBox& primOut)
 {
     Array4<Real> const& primArr = primOut.array();
     Array4<Real> const& consArr = consIn.array();
@@ -1505,7 +1505,7 @@ MultiphaseAMR::convertConsArraytoPrim(FArrayBox& consIn, FArrayBox& primOut)
     }
 }
 void
-MultiphaseAMR::convertPrimArraytoCons(FArrayBox& primIn, FArrayBox& consOut)
+Allaire::convertPrimArraytoCons(FArrayBox& primIn, FArrayBox& consOut)
 {
     Array4<Real> const& primArr = primIn.array();
     Array4<Real> const& consArr = consOut.array();
@@ -1543,7 +1543,7 @@ MultiphaseAMR::convertPrimArraytoCons(FArrayBox& primIn, FArrayBox& consOut)
 //Estimate time step.
 //
 Real
-MultiphaseAMR::estTimeStep (Real)
+Allaire::estTimeStep (Real)
 {
     // This is just a dummy value to start with
     Real dt_est  = 1.0e+20;
@@ -1609,7 +1609,7 @@ MultiphaseAMR::estTimeStep (Real)
     // dt_est *= cfl;
 
     if (verbose) {
-	amrex::Print() << "MultiphaseAMR::estTimeStep at level " << level
+	amrex::Print() << "Allaire::estTimeStep at level " << level
                        << ":  dt_est = " << dt_est << std::endl;
     }
 
@@ -1620,7 +1620,7 @@ MultiphaseAMR::estTimeStep (Real)
 //Compute initial time step.
 //
 Real
-MultiphaseAMR::initialTimeStep ()
+Allaire::initialTimeStep ()
 {
     return estTimeStep(0.0);
 }
@@ -1629,7 +1629,7 @@ MultiphaseAMR::initialTimeStep ()
 //Compute initial `dt'.
 //
 void
-MultiphaseAMR::computeInitialDt (int                   finest_level,
+Allaire::computeInitialDt (int                   finest_level,
 	  	               int                   sub_cycle,
                                Vector<int>&           n_cycle,
                                const Vector<IntVect>& ref_ratio,
@@ -1673,7 +1673,7 @@ MultiphaseAMR::computeInitialDt (int                   finest_level,
 //Compute new `dt'.
 //
 void
-MultiphaseAMR::computeNewDt (int                   finest_level,
+Allaire::computeNewDt (int                   finest_level,
 		           int                   sub_cycle,
                            Vector<int>&           n_cycle,
                            const Vector<IntVect>& ref_ratio,
@@ -1691,7 +1691,7 @@ MultiphaseAMR::computeNewDt (int                   finest_level,
 
     for (int i = 0; i <= finest_level; i++)
     {
-        MultiphaseAMR& adv_level = getLevel(i);
+        Allaire& adv_level = getLevel(i);
         dt_min[i] = adv_level.estTimeStep(dt_level[i]);
     }
 
@@ -1750,7 +1750,7 @@ MultiphaseAMR::computeNewDt (int                   finest_level,
 //Do work after timestep().
 //
 void
-MultiphaseAMR::post_timestep (int iteration)
+Allaire::post_timestep (int iteration)
 {
     //
     // Integration cycle on fine level grids is complete
@@ -1783,7 +1783,7 @@ MultiphaseAMR::post_timestep (int iteration)
 //Do work after regrid().
 //
 void
-MultiphaseAMR::post_regrid (int lbase, int new_finest) {
+Allaire::post_regrid (int lbase, int new_finest) {
 #ifdef AMREX_PARTICLES
   if (TracerPC && level == lbase) {
       TracerPC->Redistribute(lbase);
@@ -1795,7 +1795,7 @@ MultiphaseAMR::post_regrid (int lbase, int new_finest) {
 //Do work after a restart().
 //
 void
-MultiphaseAMR::post_restart()
+Allaire::post_restart()
 {
 #ifdef AMREX_PARTICLES
     if (do_tracers and level == 0) {
@@ -1810,7 +1810,7 @@ MultiphaseAMR::post_restart()
 //Do work after init().
 //
 void
-MultiphaseAMR::post_init (Real stop_time)
+Allaire::post_init (Real stop_time)
 {
     if (level > 0)
         return;
@@ -1827,7 +1827,7 @@ MultiphaseAMR::post_init (Real stop_time)
 //Error estimation for regridding.
 //
 void
-MultiphaseAMR::errorEst (TagBoxArray& tags,
+Allaire::errorEst (TagBoxArray& tags,
 	               int          clearval,
                        int          tagval,
                        Real         time,
@@ -1903,7 +1903,7 @@ MultiphaseAMR::errorEst (TagBoxArray& tags,
 }
 
 void
-MultiphaseAMR::computeMaxGrad(const FArrayBox& statein, FArrayBox& rhoGradIn, const Box& bx,
+Allaire::computeMaxGrad(const FArrayBox& statein, FArrayBox& rhoGradIn, const Box& bx,
     const Real* dx, Real& rhoGradMax)
 {
     Array4<Real const> const& stateArray = statein.array();
@@ -1944,7 +1944,7 @@ MultiphaseAMR::computeMaxGrad(const FArrayBox& statein, FArrayBox& rhoGradIn, co
 }
 
 void
-MultiphaseAMR::performTaggingRhoGrad(Array4<char> tagfabArray, const Box& tilebx,
+Allaire::performTaggingRhoGrad(Array4<char> tagfabArray, const Box& tilebx,
     const FArrayBox& statein,  const FArrayBox& rhoGradIn, Real rhoGradMax, const Real* dx)
 {
     Array4<Real const> const& stateArray = statein.array();
@@ -1977,7 +1977,7 @@ MultiphaseAMR::performTaggingRhoGrad(Array4<char> tagfabArray, const Box& tilebx
 }
 
 void
-MultiphaseAMR::read_params ()
+Allaire::read_params ()
 {
     static bool done = false;
 
@@ -2029,7 +2029,7 @@ MultiphaseAMR::read_params ()
 }
 
 void
-MultiphaseAMR::reflux ()
+Allaire::reflux ()
 {
     BL_ASSERT(level<parent->finestLevel());
 
@@ -2044,24 +2044,24 @@ MultiphaseAMR::reflux ()
 
         ParallelDescriptor::ReduceRealMax(end,IOProc);
 
-        amrex::Print() << "MultiphaseAMR::reflux() at level " << level
+        amrex::Print() << "Allaire::reflux() at level " << level
                        << " : time = " << end << std::endl;
     }
 }
 
 void
-MultiphaseAMR::avgDown ()
+Allaire::avgDown ()
 {
     if (level == parent->finestLevel()) return;
     avgDown(Cons_Type);
 }
 
 void
-MultiphaseAMR::avgDown (int state_indx)
+Allaire::avgDown (int state_indx)
 {
     if (level == parent->finestLevel()) return;
 
-    MultiphaseAMR& fine_lev = getLevel(level+1);
+    Allaire& fine_lev = getLevel(level+1);
     MultiFab&  S_fine   = fine_lev.get_new_data(state_indx);
     MultiFab&  S_crse   = get_new_data(state_indx);
 
@@ -2072,7 +2072,7 @@ MultiphaseAMR::avgDown (int state_indx)
 
 #ifdef AMREX_PARTICLES
 void
-MultiphaseAMR::init_particles ()
+Allaire::init_particles ()
 {
   if (do_tracers and level == 0)
     {

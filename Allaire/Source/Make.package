@@ -1,5 +1,5 @@
-CEXE_sources += AmrLevelAdv.cpp LevelBldAdv.cpp main.cpp
+CEXE_sources += Allaire.cpp LevelBldAdv.cpp main.cpp
 
-CEXE_headers += AmrLevelAdv.H
+CEXE_headers += Allaire.H
 
 FEXE_headers += Adv_F.H

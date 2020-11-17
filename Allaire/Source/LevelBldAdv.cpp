@@ -1,6 +1,6 @@
 
 #include <AMReX_LevelBld.H>
-#include <AmrLevelAdv.H>
+#include <Allaire.H>
 
 using namespace amrex;
 
@@ -30,19 +30,19 @@ getLevelBld ()
 void
 LevelBldAdv::variableSetUp ()
 {
-    MultiphaseAMR::variableSetUp();
+    Allaire::variableSetUp();
 }
 
 void
 LevelBldAdv::variableCleanUp ()
 {
-    MultiphaseAMR::variableCleanUp();
+    Allaire::variableCleanUp();
 }
 
 AmrLevel*
 LevelBldAdv::operator() ()
 {
-    return new MultiphaseAMR;
+    return new Allaire;
 }
 
 AmrLevel*
@@ -53,5 +53,5 @@ LevelBldAdv::operator() (Amr&            papa,
                          const DistributionMapping& dm,
                          Real            time)
 {
-    return new MultiphaseAMR(papa, lev, level_geom, ba, dm, time);
+    return new Allaire(papa, lev, level_geom, ba, dm, time);
 }

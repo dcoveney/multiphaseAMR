@@ -1,5 +1,5 @@
-#ifndef _MultiphaseAMR_H_
-#define _MultiphaseAMR_H_
+#ifndef _Allaire_H_
+#define _Allaire_H_
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_AmrParticles.H>
@@ -22,7 +22,7 @@ enum StateType {Cons_Type = 0, Prim_Type};
 // AmrLevel-derived class for hyperbolic conservation equations
 //
 
-class MultiphaseAMR
+class Allaire
     :
     public amrex::AmrLevel
 {
@@ -30,11 +30,11 @@ public:
     //
     //Default constructor.  Builds invalid object.
     //
-    MultiphaseAMR ();
+    Allaire ();
     //
     //The basic constructor.
     //
-    MultiphaseAMR (amrex::Amr&     papa,
+    Allaire (amrex::Amr&     papa,
 	         int             lev,
                  const amrex::Geometry& level_geom,
                  const amrex::BoxArray& bl,
@@ -43,7 +43,7 @@ public:
     //
     //The destructor.
     //
-    virtual ~MultiphaseAMR () override;
+    virtual ~Allaire () override;
     //
     //Restart from a checkpoint file.
     //
@@ -75,7 +75,7 @@ public:
     //
     virtual void initData () override;
     //
-    //Initialize data on this level from another MultiphaseAMR (during regrid).
+    //Initialize data on this level from another Allaire (during regrid).
     //
     virtual void init (amrex::AmrLevel& old) override;
     //
@@ -199,7 +199,7 @@ protected:
     static void read_params ();
 
     // inline functioned implemented below
-    MultiphaseAMR& getLevel (int lev);
+    Allaire& getLevel (int lev);
     amrex::FluxRegister& getFluxReg ();
     amrex::FluxRegister& getFluxReg (int lev);
 
@@ -233,15 +233,15 @@ protected:
 //
 
 inline
-MultiphaseAMR&
-MultiphaseAMR::getLevel (int lev)
+Allaire&
+Allaire::getLevel (int lev)
 {
-    return *(MultiphaseAMR *) &parent->getLevel(lev);
+    return *(Allaire *) &parent->getLevel(lev);
 }
 
 inline
 amrex::FluxRegister&
-MultiphaseAMR::getFluxReg ()
+Allaire::getFluxReg ()
 {
     BL_ASSERT(flux_reg);
     return *flux_reg;
@@ -249,8 +249,8 @@ MultiphaseAMR::getFluxReg ()
 
 inline
 amrex::FluxRegister&
-MultiphaseAMR::getFluxReg (int lev)
+Allaire::getFluxReg (int lev)
 {
     return getLevel(lev).getFluxReg();
 }
-#endif /*_MultiphaseAMR_H_*/
+#endif /*_Allaire_H_*/
